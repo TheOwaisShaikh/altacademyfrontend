@@ -1,0 +1,587 @@
+.container {
+  width: 1208px;
+  height: 650px;
+  margin: 0 auto;
+  position: relative;
+  border-radius: 15px;
+  padding: 20px; /* Uniform padding for equal spacing on all sides */
+  box-sizing: border-box; /* Ensure padding is included in the width/height */
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+  background-image: linear-gradient(to right, #0384bd, #02517a); /* Gradient from a lighter blue to #02517a */
+}
+
+.chatContainer {
+  display: flex;
+  
+  width: 100%;
+  height: 100%;
+  border-radius: 15px;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.sessionContainer {
+  width: 240px;
+  height: 100%;
+  border-radius: 15px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  background-color: #fff;
+  padding: 10px; /* Space inside the session container */
+  box-sizing: border-box;
+  margin-right: 20px; /* Space between session and message containers */
+}
+
+.botButton {
+  width: 60px;
+  height: 60px;
+  background-color: #007bff;
+  color: white;
+  font-size: 24px;
+  border: none;
+  border-radius: 50%;
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.3s, box-shadow 0.3s;
+}
+
+.botButton:hover {
+  background-color: #0056b3;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.3);
+}
+
+
+.header {
+  padding: 10px;
+  border-radius: 10px;
+  background-color: #02517a;
+  text-align: center;
+  font-weight: bold;
+  position: sticky;
+  top: 0;
+  width: 190px;
+  color:white;
+  z-index: 1;
+  cursor: pointer; /* Add this line to change the cursor to pointer on hover */
+
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.2s, background-color 0.2s;
+}
+
+.header:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  background-image: linear-gradient(to right, #0384bd, #02517a); /* Gradient from a lighter blue to #02517a */
+}
+
+.header:active {
+  transform: scale(0.98); /* Slightly shrink to give a pressed effect */
+  background-image: linear-gradient(to right, #0384bd, #02517a); /* Gradient from a lighter blue to #02517a */
+}
+
+.newChatIcon {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 20px;
+  color: #007bff;
+  transition: color 0.3s;
+}
+
+.newChatIcon:hover {
+  color: #0056b3;
+}
+
+.messagesContainer {
+  flex-grow: 1;
+  height: 100%;
+  background-color: #ffff;
+  border-radius: 15px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  width: 920px;
+  padding: 20px; /* Space inside the messagesContainer */
+  box-sizing: border-box;
+}
+
+.inputContainer {
+  display: flex;
+  align-items: center; /* Vertically center the input field */
+  justify-content: space-between; /* Ensure even spacing between elements */
+  border-radius: 10px;
+  
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-top: auto;
+  border: 2px solid #f7f7f7;
+}
+
+.inputField {
+  flex: 1;
+  border-radius: 5px;
+  resize: none;
+  overflow-y: auto;
+  max-height: 120px;
+  height: 5px;
+  background-color: #fff;
+  border: none;
+  outline: none;
+  margin-top: 10px;
+  width: 100%; /* Ensure the input field takes full width within the container */
+  padding: 5px; /* Add some padding inside the input field */
+  box-sizing: border-box; /* Ensure padding doesn't affect width */
+}
+
+/* General message bubble container */
+.message {
+  display: inline-block;
+  margin-bottom: 15px;
+  padding: 10px;
+  border-radius: 1.15rem; /* Rounded corners for iMessage style */
+  max-width: 75%;
+  line-height: 1.25;
+  word-wrap: break-word;
+  position: relative; /* Required for the tail positioning */
+}
+
+/* User message styling */
+.userMessage {
+  align-self: flex-end;
+  background-color: #02517a; /* iMessage blue color */
+  color: #fff;
+}
+
+/* Tail for user message */
+.userMessage::before {
+  content: "";
+  position: absolute;
+  bottom: -0.1rem;
+  right: -0.35rem;
+  height: 1rem;
+  border-bottom-left-radius: 0.8rem 0.7rem;
+  border-right: 1rem solid #02517a;
+  transform: translate(0, -0.1rem);
+}
+
+.userMessage::after {
+  content: "";
+  position: absolute;
+  bottom: -0.1rem;
+  right: -40px;
+  width: 10px;
+  height: 1rem;
+  background-color: #fff;
+  border-bottom-left-radius: 0.5rem;
+  transform: translate(-30px, -2px);
+}
+
+/* Bot message styling */
+.botMessage {
+  align-self: flex-start;
+  background-color: #e5e5ea; /* iMessage gray color */
+  color: #000;
+}
+
+/* Tail for bot message */
+.botMessage::before {
+  content: "";
+  position: absolute;
+  bottom: -0.1rem;
+  left: -0.35rem;
+  height: 1rem;
+  border-bottom-right-radius: 0.8rem 0.7rem;
+  border-left: 1rem solid #e5e5ea;
+  transform: translate(0, -0.1rem);
+}
+
+.botMessage::after {
+  content: "";
+  position: absolute;
+  bottom: -0.1rem;
+  left: 20px;
+  width: 10px;
+  height: 1rem;
+  background-color: #fff;
+  border-bottom-right-radius: 0.5rem;
+  transform: translate(-30px, -2px);
+}
+
+/* General utility classes */
+.message.userMessage ~ .userMessage {
+  margin-top: 0.25rem;
+}
+
+.message.userMessage ~ .userMessage:last-child {
+  margin-bottom: 0.5rem;
+}
+
+.message.botMessage ~ .botMessage {
+  margin-top: 0.25rem;
+}
+
+.message.botMessage ~ .botMessage:last-child {
+  margin-bottom: 0.5rem;
+}
+
+/* Emoji-only message */
+.message.emoji {
+  background: none;
+  font-size: 2.5rem;
+}
+
+.message.emoji::before {
+  content: none;
+}
+
+.no-tail::before {
+  display: none;
+}
+
+.margin-b_none {
+  margin-bottom: 0 !important;
+}
+
+.margin-b_one {
+  margin-bottom: 1rem !important;
+}
+
+.margin-t_one {
+  margin-top: 1rem !important;
+}
+
+/* Responsive styling */
+@media screen and (max-width: 800px) {
+  .message {
+    font-size: 1.05rem;
+    margin: 0.5rem 0;
+  }
+
+  .userMessage, .botMessage {
+    max-width: 100%;
+  }
+}
+
+
+/* User message styling */
+.userMessage {
+  align-self: flex-end;
+  background-color: #02517a; /* iMessage blue color */
+  color: #fff;
+}
+
+/* Tail for user message */
+.userMessage::before {
+  content: "";
+  position: absolute;
+  bottom: -0.1rem;
+  right: -0.35rem;
+  height: 1rem;
+  border-bottom-left-radius: 0.8rem 0.7rem;
+  border-right: 1rem solid #02517a;
+  transform: translate(0, -0.1rem);
+}
+
+.userMessage::after {
+  content: "";
+  position: absolute;
+  bottom: -0.1rem;
+  right: -40px;
+  width: 10px;
+  height: 1rem;
+  background-color: #fff;
+  border-bottom-left-radius: 0.5rem;
+  transform: translate(-30px, -2px);
+}
+
+/* Bot message styling */
+.botMessage {
+  display: flex;
+  align-items: center;
+  position: relative;
+  padding: 0.5rem 1rem;
+  background-color: #e5e5ea;
+  border-radius: 0.5rem;
+  margin-bottom: 0.5rem;
+  animation: slideUp 0.3s ease-out;
+}
+
+.botMessage img {
+  margin-right: 5px; /* Space between the logo and the message */
+  width: 30px; /* Adjust as needed */
+  height: auto;
+}
+
+/* Tail for bot message */
+.botMessage::before {
+  
+  content: "";
+  position: absolute;
+  bottom: -0.1rem;
+  left: -0.35rem;
+  height: 1rem;
+  border-bottom-right-radius: 0.8rem 0.7rem;
+  border-left: 1rem solid #e5e5ea;
+  transform: translate(0, -0.1rem);
+}
+
+.botMessage img {
+  margin-right: 5px; /* Space between the logo and the message */
+  width: 30px; /* Adjust as needed */
+  height: auto;
+}
+.botMessage::after {
+
+  content: "";
+  position: absolute;
+
+  bottom: -0.1rem;
+  left: 20px;
+  width: 10px;
+  height: 1rem;
+  background-color: #fff;
+  border-bottom-right-radius: 0.5rem;
+  transform: translate(-30px, -2px);
+}
+
+/* General utility classes */
+.message.userMessage ~ .userMessage {
+  margin-top: 0.25rem;
+}
+
+.message.userMessage ~ .userMessage:last-child {
+  margin-bottom: 0.5rem;
+}
+
+.message.botMessage ~ .botMessage {
+  margin-top: 0.25rem;
+}
+
+.message.botMessage ~ .botMessage:last-child {
+  margin-bottom: 0.5rem;
+}
+
+/* Emoji-only message */
+.message.emoji {
+  background: none;
+  font-size: 2.5rem;
+}
+
+.message.emoji::before {
+  content: none;
+}
+
+.no-tail::before {
+  display: none;
+}
+
+.margin-b_none {
+  margin-bottom: 0 !important;
+}
+
+.margin-b_one {
+  margin-bottom: 1rem !important;
+}
+
+.margin-t_one {
+  margin-top: 1rem !important;
+}
+/* Slide-up animation for messages */
+@keyframes slideUp {
+  0% {
+    opacity: 0;
+    transform: translateY(30px); /* Start slightly lower */
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0); /* End at the original position */
+  }
+}
+
+/* Apply the animation to the messages */
+.message {
+  display: inline-block;
+  margin-bottom: 15px;
+  padding: 10px;
+  border-radius: 1.15rem; /* Rounded corners for iMessage style */
+  max-width: 75%;
+  line-height: 1.25;
+  word-wrap: break-word;
+  position: relative; /* Required for the tail positioning */
+  animation: slideUp 0.4s ease-out; /* Apply the slideUp animation */
+}
+
+.uploadedImage {
+  max-width: 100%; /* Ensure the image adjusts to fit the bubble */
+  height: auto; /* Maintain the aspect ratio of the image */
+  display: block;
+  margin-top: 5px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.typingIndicator {
+  font-style: italic;
+  color: #999;
+  margin-top: 10px;
+}
+
+.session {
+  padding: 5px;
+  cursor: pointer;
+  position: relative;
+  z-index: 999; /* Set a high z-index to ensure it's on top */
+
+  background-color: #f8f8f8;
+  border-radius: 10px;
+  margin-top: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 2px solid #02517a; /* Adding a blue border */
+}
+
+.session:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  background-color: #02517a;
+  color:white;
+  
+}
+
+.session:active {
+  transform: scale(0.98); /* Slightly shrink to give a pressed effect */
+  background-image: linear-gradient(to right, #0384bd, #02517a); /* Gradient from a lighter blue to #02517a */
+}
+
+.ellipsisButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  color: #333;
+  padding: 5px;
+  transition: color 0.3s ease; /* Smooth transition for color change */
+
+  display: flex;
+  align-items: center;
+}
+
+.ellipsisButton:hover {
+  color: white;
+}
+
+
+
+
+
+
+
+
+/* 
+.inputField {
+  flex: 1;
+  border-radius: 5px;
+  resize: none;
+  overflow-y: auto;
+  max-height: 120px;
+  height: 20px;
+  background-color: #fff;
+  border: none;
+  outline: none;
+  
+  width: 100%;
+} */
+
+.attachmentIcon {
+  font-size: 30px;
+  margin-right: 10px;
+  cursor: pointer;
+  color: #02517a;
+  
+
+}
+.attachmentIcon:active {
+  transform: scale(0.68); /* Slightly shrink to give a pressed effect */
+}
+
+.attachmentIcon:hover {
+  color: #02517a;
+}
+.sendButton {
+  background-color: transparent; /* Remove any default background */
+  border: none;
+  cursor: pointer;
+  padding: 10px;
+  border-radius: 5px;
+  margin-left: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  appearance: none; /* Remove default browser styles */
+}
+
+
+.sendButton:active {
+  transform: scale(0.68); /* Slightly shrink to give a pressed effect */
+
+}
+.dropdownMenu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 5px;
+  margin-left: 200px;
+  width: 120px; /* Adjust width if needed */
+  background-color: #ffffff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+  z-index: 9999; /* Set a high z-index to ensure it's on top */
+  padding: 5px 0; /* Add some padding for spacing */
+  display: flex;
+  align-items: center; /* Center content vertically */
+  justify-content: center; /* Center content horizontally */
+}
+
+.dropdownItem {
+  display: flex; /* Use flexbox to align icon and text */
+  align-items: center; /* Center content vertically */
+  justify-content: center; /* Center content horizontally */
+  padding: 2px;
+  cursor: pointer;
+  color: #333; /* Default color */
+  transition: color 0.2s, background-color 0.2s; /* Smooth transition */
+  width: 100%; /* Make sure it takes the full width of the dropdown */
+  text-align: center; /* Center text */
+}
+
+/* Change the color to red when hovering over the .dropdownItem */
+.dropdownItem:hover .deleteText, 
+.dropdownItem:hover .trashIcon {
+  color: #ff4d4d; /* Change the icon and text color to red */
+}
+
+.deleteText {
+  font-size: 18px; /* Adjust the size as needed */
+  transition: color 0.2s; /* Smooth transition for text color */
+}
+
+.trashIcon {
+  margin-right: 8px; /* Space between icon and text */
+  font-size: 20px;
+  transition: color 0.2s; /* Smooth transition for icon color */
+}
+
+.sendIcon {
+  font-size: 24px;
+}
