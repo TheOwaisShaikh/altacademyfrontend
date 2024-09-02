@@ -466,6 +466,7 @@
 //   );
 // }
 // import { useState, useEffect, useRef } from 'react';
+// import { useRouter } from 'next/router';
 // import { FaPaperclip, FaPaperPlane, FaEllipsisV } from 'react-icons/fa'; // Import the icons
 // import styles from '../styles/Chat.module.css'; // Import the CSS module
 // import { IoAttachOutline } from "react-icons/io5";
@@ -481,11 +482,53 @@
 //   const [isTyping, setIsTyping] = useState(false);
 //   const [isChatVisible, setIsChatVisible] = useState(true);
 //   const [dropdownVisible, setDropdownVisible] = useState(null); // Track which session dropdown is visible
+//   const [email, setEmail] = useState(null);
 
 //   const fileInputRef = useRef(null); // Ref to handle file input
 //   const inputRef = useRef(null); // Ref for the textarea
 //   const dropdownRef = useRef(null); // Ref for the dropdown menu
-//   const hardcodedEmail = 'p000@gmail.com';
+//   const router = useRouter();
+
+//   useEffect(() => {
+//     // Listen for the postMessage event to receive the email
+//     const handlePostMessage = async (event) => {
+//       if (event.origin !== 'https://altacademy.org') return; // Replace with your boss's website domain
+
+//       const { email } = event.data;
+
+//       if (email) {
+//         console.log("Email received from parent:", email);
+
+//         // Save email in session storage
+//         sessionStorage.setItem('userEmail', email);
+//         setEmail(email);
+
+//         // Auto-login by directly calling the login API
+//         const loginRes = await fetch('/api/login', {
+//           method: 'POST',
+//           headers: {
+//             'Content-Type': 'application/json',
+//           },
+//           body: JSON.stringify({ email }),
+//         });
+
+//         const loginData = await loginRes.json();
+
+//         if (loginData.success) {
+//           // Fetch chat history after successful login
+//           fetchChatHistory(email);
+//         } else {
+//           console.error('Auto-login failed:', loginData.message);
+//         }
+//       }
+//     };
+
+//     window.addEventListener('message', handlePostMessage);
+
+//     return () => {
+//       window.removeEventListener('message', handlePostMessage);
+//     };
+//   }, [router]);
 
 //   useEffect(() => {
 //     const storedVisibility = localStorage.getItem('isChatVisible');
@@ -493,35 +536,18 @@
 //       setIsChatVisible(storedVisibility === 'true');
 //     }
 
-//     fetchChatHistory();
+//     const userEmail = sessionStorage.getItem('userEmail');
+//     if (!userEmail) {
+//       router.push('/login'); // Redirect to login if no email is found
+//     } else {
+//       setEmail(userEmail);
+//       fetchChatHistory(userEmail);
+//     }
 //   }, []);
 
-//   useEffect(() => {
-//     // Add event listener to close dropdown when clicking outside
-//     const handleClickOutside = (event) => {
-//       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-//         setDropdownVisible(null);
-//       }
-//     };
-
-//     document.addEventListener('mousedown', handleClickOutside);
-//     return () => {
-//       // Remove event listener when component is unmounted
-//       document.removeEventListener('mousedown', handleClickOutside);
-//     };
-//   }, [dropdownRef]);
-
-//   useEffect(() => {
-//     // Adjust the height of the textarea dynamically
-//     if (inputRef.current) {
-//       inputRef.current.style.height = 'auto'; // Reset height
-//       inputRef.current.style.height = `${inputRef.current.scrollHeight}px`; // Set height based on content
-//     }
-//   }, [input]);
-
-//   const fetchChatHistory = async () => {
+//   const fetchChatHistory = async (userEmail) => {
 //     try {
-//       const res = await fetch(`/api/chat-history?email=${hardcodedEmail}&timestamp=${new Date().getTime()}`);
+//       const res = await fetch(`/api/chat-history?email=${userEmail}&timestamp=${new Date().getTime()}`);
 //       const data = await res.json();
 
 //       if (data.success) {
@@ -529,7 +555,7 @@
 
 //         const storedSessionId = localStorage.getItem('currentSessionId');
 //         if (storedSessionId) {
-//           restoreSession(storedSessionId);
+//           restoreSession(storedSessionId, userEmail);
 //         }
 //       } else {
 //         console.error('Failed to fetch sessions:', data.message);
@@ -539,10 +565,10 @@
 //     }
 //   };
 
-//   const restoreSession = async (sessionId) => {
+//   const restoreSession = async (sessionId, userEmail) => {
 //     if (!sessionId) return;
 
-//     const res = await fetch(`/api/chat-history?email=${hardcodedEmail}&sessionId=${sessionId}`);
+//     const res = await fetch(`/api/chat-history?email=${userEmail}&sessionId=${sessionId}`);
 //     const data = await res.json();
 
 //     if (data.success) {
@@ -557,45 +583,38 @@
 //   const maxTitleLength = 15; // Maximum number of characters to display in the title
 
 //   const handleSendMessage = async () => {
-//     // Ensure there's non-whitespace text or an image
 //     if (!input.trim() && !image) {
-//         console.error('No input or image provided');
-//         return;
+//       console.error('No input or image provided');
+//       return;
 //     }
 
-//     // Handle truncation for session titles
 //     const truncatedTitle = input.trim().length > maxTitleLength 
 //         ? input.trim().substring(0, maxTitleLength) + "..." 
 //         : input.trim();
 
-//     // Add the user's message to the state
 //     const userMessage = { sender: 'user', text: input, image: imagePreview };
 //     setMessages([...messages, userMessage]);
 
-//     // Reset input fields after sending the message
 //     setInput('');
 //     setImage(null);
 //     setImagePreview(null);
 
 //     setIsTyping(true);
 
-//     // Prepare the form data for submission
 //     const formData = new FormData();
-//     formData.append('email', hardcodedEmail); // Include email
-//     formData.append('session_id', currentSessionId || ''); // Include session_id if available
-//     formData.append('question', input.trim()); // Ensure input is properly passed
+//     formData.append('email', email);
+//     formData.append('session_id', currentSessionId || '');
+//     formData.append('question', input.trim());
 //     if (image) {
 //         formData.append('image', image);
 //     }
 
 //     try {
-//         // Send the form data to the server
 //         const res = await fetch('/api/chat', {
 //             method: 'POST',
 //             body: formData,
 //         });
 
-//         // Process the server's response
 //         const data = await res.json();
 //         setIsTyping(false);
 
@@ -603,7 +622,6 @@
 //             const botMessage = { sender: 'bot', text: data.reply };
 //             setMessages((prevMessages) => [...prevMessages, botMessage]);
 
-//             // Handle session management
 //             if (!currentSessionId) {
 //                 setCurrentSessionId(data.sessionId);
 //                 setSessions([...sessions, { id: data.sessionId, title: truncatedTitle }]);
@@ -616,7 +634,9 @@
 //         console.error('Error sending message:', error);
 //         setIsTyping(false);
 //     }
-// };
+//   };
+
+
 
 
 //   const handleNewChat = async () => {
@@ -786,10 +806,10 @@
 //     </div>
 //   );
 // }
-
 import { useState, useEffect, useRef } from 'react';
-import { FaPaperclip, FaPaperPlane, FaEllipsisV } from 'react-icons/fa';
-import styles from '../styles/Chat.module.css';
+import { useRouter } from 'next/router';
+import { FaPaperclip, FaPaperPlane, FaEllipsisV } from 'react-icons/fa'; // Import the icons
+import styles from '../styles/Chat.module.css'; // Import the CSS module
 import { IoAttachOutline } from "react-icons/io5";
 import { BsTrash3Fill } from "react-icons/bs";
 
@@ -797,105 +817,78 @@ export default function Chat() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [image, setImage] = useState(null);
-  const [imagePreview, setImagePreview] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null); // New state for image preview
   const [sessions, setSessions] = useState([]);
   const [currentSessionId, setCurrentSessionId] = useState(null);
   const [isTyping, setIsTyping] = useState(false);
   const [isChatVisible, setIsChatVisible] = useState(true);
-  const [dropdownVisible, setDropdownVisible] = useState(null);
-  const [userEmail, setUserEmail] = useState('');  // Add state for the dynamic email
+  const [dropdownVisible, setDropdownVisible] = useState(null); // Track which session dropdown is visible
+  const [email, setEmail] = useState(null);
 
-  const fileInputRef = useRef(null);
-  const inputRef = useRef(null);
-  const dropdownRef = useRef(null);
+  const fileInputRef = useRef(null); // Ref to handle file input
+  const inputRef = useRef(null); // Ref for the textarea
+  const dropdownRef = useRef(null); // Ref for the dropdown menu
+  const router = useRouter();
 
   useEffect(() => {
-    // Function to receive the email dynamically from the parent site
-    const receiveEmail = (event) => {
-      if (event.origin === 'https://altacademy.org') {  // Ensure you're only accepting messages from the trusted domain
-        const { email } = event.data;
-        if (email) {
-          setUserEmail(email);
-          fetchEmail(email);  // Fetch email and proceed
+    // Listen for the postMessage event to receive the email
+    const handlePostMessage = async (event) => {
+      if (event.origin !== 'https://altacademy.org') return; // Replace with your boss's website domain
+
+      const { email } = event.data;
+
+      if (email) {
+        console.log("Email received from parent:", email);
+
+        // Save email in session storage
+        sessionStorage.setItem('userEmail', email);
+        setEmail(email);
+
+        // Auto-login by directly calling the login API
+        const loginRes = await fetch('/api/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email }),
+        });
+
+        const loginData = await loginRes.json();
+
+        if (loginData.success) {
+          // Fetch chat history after successful login
+          fetchChatHistory(email);
+        } else {
+          console.error('Auto-login failed:', loginData.message);
         }
       }
     };
 
-    window.addEventListener('message', receiveEmail);
+    window.addEventListener('message', handlePostMessage);
 
     return () => {
-      window.removeEventListener('message', receiveEmail);
+      window.removeEventListener('message', handlePostMessage);
     };
-  }, []);
-  useEffect(() => {
-    const handlePaste = (event) => {
-      const items = event.clipboardData.items;
-      for (let i = 0; i < items.length; i++) {
-        if (items[i].type.indexOf('image') !== -1) {
-          const file = items[i].getAsFile();
-          setImage(file);
-          setImagePreview(URL.createObjectURL(file));
-        }
-      }
-    };
-  
-    inputRef.current.addEventListener('paste', handlePaste);
-  
-    return () => {
-      inputRef.current.removeEventListener('paste', handlePaste);
-    };
-  }, []);
-  const fetchEmail = async (email) => {
-    try {
-      const res = await fetch('/api/handle-email', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email }),  // Use dynamic email here
-      });
-      const data = await res.json();
-      if (data.success) {
-        setUserEmail(data.email);
-        fetchChatHistory(data.email);  // Pass the email to fetchChatHistory
-      } else {
-        console.error('Failed to fetch email:', data.message);
-      }
-    } catch (error) {
-      console.error('Error fetching email:', error);
-    }
-  };
+  }, [router]);
 
   useEffect(() => {
     const storedVisibility = localStorage.getItem('isChatVisible');
     if (storedVisibility !== null) {
       setIsChatVisible(storedVisibility === 'true');
     }
+
+    const userEmail = sessionStorage.getItem('userEmail');
+    if (!userEmail) {
+      router.push('/login'); // Redirect to login if no email is found
+    } else {
+      setEmail(userEmail);
+      fetchChatHistory(userEmail);
+    }
   }, []);
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setDropdownVisible(null);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [dropdownRef]);
-
-  useEffect(() => {
-    if (inputRef.current) {
-      inputRef.current.style.height = 'auto';
-      inputRef.current.style.height = `${inputRef.current.scrollHeight}px`;
-    }
-  }, [input]);
-
-  const fetchChatHistory = async (email) => {
+  const fetchChatHistory = async (userEmail) => {
     try {
-      const res = await fetch(`/api/chat-history?email=${email}&timestamp=${new Date().getTime()}`);
+      const res = await fetch(`/api/chat-history?email=${userEmail}&timestamp=${new Date().getTime()}`);
       const data = await res.json();
 
       if (data.success) {
@@ -903,7 +896,7 @@ export default function Chat() {
 
         const storedSessionId = localStorage.getItem('currentSessionId');
         if (storedSessionId) {
-          restoreSession(storedSessionId, email);  // Pass the email to restoreSession
+          restoreSession(storedSessionId, userEmail);
         }
       } else {
         console.error('Failed to fetch sessions:', data.message);
@@ -913,10 +906,10 @@ export default function Chat() {
     }
   };
 
-  const restoreSession = async (sessionId, email) => {
+  const restoreSession = async (sessionId, userEmail) => {
     if (!sessionId) return;
 
-    const res = await fetch(`/api/chat-history?email=${email}&sessionId=${sessionId}`);
+    const res = await fetch(`/api/chat-history?email=${userEmail}&sessionId=${sessionId}`);
     const data = await res.json();
 
     if (data.success) {
@@ -928,14 +921,18 @@ export default function Chat() {
     }
   };
 
+  const maxTitleLength = 15; // Maximum number of characters to display in the title
+
   const handleSendMessage = async () => {
     if (!input.trim() && !image) {
       console.error('No input or image provided');
       return;
     }
   
-    // Prepare a title based on the input or fallback to the bot's reply later
-    let truncatedTitle = input.trim().length > 15 ? input.trim().substring(0, 15) + "..." : input.trim();
+    // Set the title only if there's text or an appropriate fallback is needed
+    let truncatedTitle = input.trim().length > 0 
+      ? input.trim().substring(0, maxTitleLength) + "..." 
+      : null;
   
     const userMessage = { sender: 'user', text: input, image: imagePreview };
     setMessages([...messages, userMessage]);
@@ -947,11 +944,11 @@ export default function Chat() {
     setIsTyping(true);
   
     const formData = new FormData();
-    formData.append('email', userEmail);  // Use dynamic email
+    formData.append('email', email);
     formData.append('session_id', currentSessionId || '');
     formData.append('question', input.trim());
     if (image) {
-      formData.append('image', image);
+        formData.append('image', image);
     }
   
     try {
@@ -967,12 +964,9 @@ export default function Chat() {
         const botMessage = { sender: 'bot', text: data.reply };
         setMessages((prevMessages) => [...prevMessages, botMessage]);
   
-        // If the user's message was empty, use the bot's reply as the session title
-        if (!truncatedTitle) {
-          truncatedTitle = data.reply.length > 15 ? data.reply.substring(0, 15) + "..." : data.reply;
-        }
-  
+        // If no title has been set yet, use bot's reply as the title
         if (!currentSessionId) {
+          truncatedTitle = truncatedTitle || data.reply.substring(0, maxTitleLength) + "...";
           setCurrentSessionId(data.sessionId);
           setSessions([...sessions, { id: data.sessionId, title: truncatedTitle }]);
           localStorage.setItem('currentSessionId', data.sessionId);
@@ -989,22 +983,26 @@ export default function Chat() {
 
   const handleNewChat = async () => {
     if (currentSessionId) {
-      await fetch(`/api/end-session?sessionId=${currentSessionId}`, { method: 'POST' });
+      await fetch(`/api/end-session?sessionId=${currentSessionId}`, {
+        method: 'POST',
+      });
 
       localStorage.removeItem('currentSessionId');
       setCurrentSessionId(null);
     }
 
     setMessages([]);
-    fetchChatHistory(userEmail);  // Refetch chat history with the dynamic email
+    fetchChatHistory();
   };
 
   const handleSessionClick = async (sessionId) => {
-    await restoreSession(sessionId, userEmail);
+    await restoreSession(sessionId);
   };
 
   const handleDeleteSession = async (sessionId) => {
-    const res = await fetch(`/api/delete-session?sessionId=${sessionId}`, { method: 'DELETE' });
+    const res = await fetch(`/api/delete-session?sessionId=${sessionId}`, {
+      method: 'DELETE',
+    });
 
     if (res.ok) {
       setSessions(sessions.filter(session => session.id !== sessionId));
@@ -1023,23 +1021,46 @@ export default function Chat() {
   };
 
   const handleAttachmentClick = () => {
-    fileInputRef.current.click();
+    fileInputRef.current.click(); 
   };
 
   const handleFileChange = (e) => {
     if (e.target.files.length > 0) {
       const file = e.target.files[0];
       setImage(file);
-      setImagePreview(URL.createObjectURL(file));
+      setImagePreview(URL.createObjectURL(file)); // Show image preview
     }
   };
 
   const handleKeyPress = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
+      e.preventDefault(); // Prevent default behavior of Enter key
+      handleSendMessage(); // Send message on Enter key press
     }
   };
+
+  const handlePaste = (e) => {
+    const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+    for (const item of items) {
+      if (item.kind === 'file' && item.type.startsWith('image/')) {
+        const blob = item.getAsFile();
+        setImage(blob);
+        setImagePreview(URL.createObjectURL(blob));
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.addEventListener('paste', handlePaste);
+    }
+
+    return () => {
+      if (inputRef.current) {
+        inputRef.current.removeEventListener('paste', handlePaste);
+      }
+    };
+  }, [inputRef]);
 
   const inputContainerRef = useRef(null);
 
@@ -1062,86 +1083,91 @@ export default function Chat() {
               <div
                 key={session.id}
                 className={`${styles.session} ${session.id === currentSessionId ? styles.activeSession : ''}`}
-                onClick={() => handleSessionClick(session.id)}
+                onClick={() => handleSessionClick(session.id)} // Make the entire session container clickable
               >
-                <span>{session.title}</span>
+                <span>
+                  {session.title} {/* This will now display the truncated title */}
+                </span>
                 <button 
                   className={styles.ellipsisButton} 
-                  onClick={(e) => { e.stopPropagation(); toggleDropdown(session.id); }}
+                  onClick={(e) => { e.stopPropagation(); toggleDropdown(session.id); }} // Stop propagation to prevent session click
                 >
                   <FaEllipsisV />
                 </button>
                 {dropdownVisible === session.id && (
-                  <div className={styles.dropdownMenu} ref={dropdownRef}>
-                    <div
-                      className={styles.dropdownItem}
-                      onClick={() => handleDeleteSession(session.id)}
-                    >
-                      <BsTrash3Fill className={styles.trashIcon} />
-                      <span className={styles.deleteText}>Delete</span>
-                    </div>
-                  </div>
-                )}
+  <div className={styles.dropdownMenu} ref={dropdownRef}>
+    <div
+      className={styles.dropdownItem}
+      onClick={() => handleDeleteSession(session.id)}
+    >
+      <BsTrash3Fill className={styles.trashIcon} />
+      <span className={styles.deleteText}>Delete</span>
+      </div>
+  </div>
+)}
+
               </div>
             ))}
           </div>
           <div className={styles.chatBox}>
-            <div className={styles.messagesContainer}>
-              {messages.map((message, index) => (
-                <div
-                  key={index}
-                  className={`${styles.message} ${
-                    message.sender === 'user' ? styles.userMessage : styles.botMessage
-                  }`}
-                >
-                  {message.sender === 'bot' && (
-                    <img src="/assets/alt.png" alt="Company Logo" />
-                  )}
+          <div className={styles.messagesContainer}>
+        {messages.map((message, index) => (
+          <div
+            key={index}
+            className={`${styles.message} ${
+              message.sender === 'user' ? styles.userMessage : styles.botMessage
+            }`}
+          >
+            {message.sender === 'bot' && (
+              <img src="/assets/alt.png" alt="Company Logo" />
+            )}
 
-                  {message.image && (
-                    <div className={styles.messageImageContainer}>
-                      <img src={message.image} alt="Uploaded" className={styles.uploadedImage} />
-                    </div>
-                  )}
-                  {message.text && (
-                    <div className={styles.messageTextContainer}>
-                      <p>{message.text}</p>
-                    </div>
-                  )}
-                </div>
-              ))}
-              {isTyping && <p className={styles.typingIndicator}>Bot is typing...</p>}
-              {imagePreview && (
-                <div className={styles.imagePreviewContainer}>
-                  <img src={imagePreview} alt="Preview" className={styles.imagePreview} />
-                </div>
-              )}
-              <div className={styles.inputContainer} ref={inputContainerRef}>
-                <IoAttachOutline className={styles.attachmentIcon} onClick={handleAttachmentClick} />
-                <input
-                  type="file"
-                  accept="image/*"
-                  ref={fileInputRef}
-                  style={{ display: 'none' }}
-                  onChange={handleFileChange}
-                />
-                <textarea
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  placeholder="Type your message..."
-                  className={styles.inputField}
-                  ref={inputRef}
-                  onKeyPress={handleKeyPress}
-                />
-                <button onClick={handleSendMessage} className={styles.sendButton}>
-                  <FaPaperPlane className={styles.sendIcon} />
-                </button>
-              </div>
-            </div>
+        {message.image && (
+          <div className={styles.messageImageContainer}>
+            <img src={message.image} alt="Uploaded" className={styles.uploadedImage} />
           </div>
+        )}
+        {message.text && (
+          <div className={styles.messageTextContainer}>
+            <p>{message.text}</p> {/* Removed the prefix "user:" */}
+          </div>
+        )}
+      </div>
+    ))}
+    {isTyping && <p className={styles.typingIndicator}>Bot is typing...</p>}
+    {/* Image preview container */}
+    {imagePreview && (
+      <div className={styles.imagePreviewContainer}>
+        <img src={imagePreview} alt="Preview" className={styles.imagePreview} />
+      </div>
+    )}
+    {/* Input container is now placed within messagesContainer */}
+    <div className={styles.inputContainer} ref={inputContainerRef}>
+      <IoAttachOutline className={styles.attachmentIcon} onClick={handleAttachmentClick} />
+      <input
+        type="file"
+        accept="image/*"
+        ref={fileInputRef} // Ref for file input
+        style={{ display: 'none' }}
+        onChange={handleFileChange}
+      />
+      <textarea
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
+        placeholder="Type your message..."
+        className={styles.inputField}
+        ref={inputRef} // Ref for textarea
+        onKeyPress={handleKeyPress} // Handle Enter key press
+      />
+      <button onClick={handleSendMessage} className={styles.sendButton}>
+        <FaPaperPlane className={styles.sendIcon} />
+      </button>
+    </div>
+  </div>
+</div>
+
         </div>
       )}
     </div>
   );
 }
-

@@ -26,11 +26,11 @@ const nextConfig = {
       },
       {
         // Matching all routes for iframe embedding
-        source: '/(.*)',
+        source: "/:path*", // This applies to all routes, not just API routes
         headers: [
           {
             key: 'X-Frame-Options',
-            value: 'https://altacademy.org',  // Allows embedding on the same origin
+            value: 'ALLOW-FROM https://altacademy.org',  // Allows embedding on the specified origin
           },
           {
             key: 'Content-Security-Policy',

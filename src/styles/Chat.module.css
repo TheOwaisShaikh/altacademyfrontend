@@ -109,6 +109,8 @@
   flex-direction: column;
   justify-content: flex-end;
   width: 920px;
+  overflow-y: auto; /* Enable vertical scrolling */
+
   padding: 20px; /* Space inside the messagesContainer */
   box-sizing: border-box;
 }
